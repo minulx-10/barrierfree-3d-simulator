@@ -13,3 +13,7 @@ Thumbs.db
 .agents/
 .system_generated/
 *.log
+
+# Markdown files (Keep only README.md)
+*.md
+!README.md
