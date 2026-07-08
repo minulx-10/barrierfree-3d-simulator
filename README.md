@@ -6,6 +6,13 @@
 
 ---
 
+## 🔗 실시간 라이브 데모 & 소개 페이지
+> 💻 **접속 주소**: [https://minulx-10.github.io/barrierfree-3d-simulator/](https://minulx-10.github.io/barrierfree-3d-simulator/)
+
+*위 링크를 클릭하면 별도의 설치 없이 3D 그래픽 소개 페이지와 휠체어 시뮬레이터 본체를 즉시 직접 플레이해 보실 수 있습니다.*
+
+---
+
 ## 🎮 시뮬레이터 미리보기 & 실행 방법
 
 ### 1. 개발 서버 실행 방법
