@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>0.6m Viewpoint - IoT 이동약자 3D 시뮬레이터</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary-fixed": "#b6ebff",
+            "surface-container-low": "#161b2b",
+            "primary": "#a5e7ff",
+            "on-secondary-fixed-variant": "#104a70",
+            "error-container": "#93000a",
+            "on-error-container": "#ffdad6",
+            "surface-container": "#1a1f30",
+            "inverse-primary": "#00677f",
+            "surface-container-highest": "#2f3446",
+            "on-primary-fixed-variant": "#004e60",
+            "outline": "#859399",
+            "surface-dim": "#0e1323",
+            "primary-container": "#00d2ff",
+            "on-tertiary": "#442b00",
+            "on-tertiary-fixed": "#291800",
+            "tertiary-fixed-dim": "#ffba4a",
+            "tertiary-fixed": "#ffddb1",
+            "outline-variant": "#3c494e",
+            "secondary": "#9bcbf8",
+            "secondary-fixed": "#cde5ff",
+            "surface-variant": "#2f3446",
+            "on-error": "#690005",
+            "on-surface": "#dee1f9",
+            "tertiary": "#ffd79f",
+            "secondary-fixed-dim": "#9bcbf8",
+            "background": "#0e1323",
+            "surface": "#0e1323",
+            "surface-container-high": "#25293a",
+            "on-primary": "#003543",
+            "surface-bright": "#34394a",
+            "on-tertiary-container": "#6c4700",
+            "on-secondary-container": "#8dbde9",
+            "tertiary-container": "#ffb229",
+            "on-background": "#dee1f9",
+            "on-surface-variant": "#bbc9cf",
+            "primary-fixed-dim": "#47d6ff",
+            "on-primary-container": "#00566a",
+            "error": "#ffb4ab",
+            "on-primary-fixed": "#001f28",
+            "inverse-surface": "#dee1f9",
+            "surface-tint": "#47d6ff",
+            "surface-container-lowest": "#080d1d",
+            "on-secondary-fixed": "#001d32",
+            "secondary-container": "#144d73",
+            "on-tertiary-fixed-variant": "#624000",
+            "on-secondary": "#003352",
+            "inverse-on-surface": "#2b3041"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "base": "8px",
+            "gutter": "24px",
+            "sm": "12px",
+            "md": "24px",
+            "xl": "80px",
+            "xs": "4px",
+            "lg": "48px",
+            "container-max": "1280px"
+          },
+          "fontFamily": {
+            "headline-lg-mobile": ["Noto Sans KR"],
+            "body-md": ["Noto Sans KR"],
+            "label-mono": ["JetBrains Mono"],
+            "display-xl": ["Noto Sans KR"],
+            "body-lg": ["Noto Sans KR"],
+            "headline-md": ["Noto Sans KR"],
+            "headline-lg": ["Noto Sans KR"]
+          },
+          "fontSize": {
+            "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "label-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+            "display-xl": ["72px", {"lineHeight": "84px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-md": ["32px", {"lineHeight": "42px", "fontWeight": "600"}],
+            "headline-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b1020;
+      color: #dee1f9;
+      overflow-x: hidden;
+    }
+    
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-panel:hover {
+      border-color: #00d2ff;
+      box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
+      transform: translateY(-8px);
+    }
+
+    .neon-glow {
+      text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+    }
+
+    .btn-neon {
+      background: #00d2ff;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-neon:hover {
+      box-shadow: 0 0 35px rgba(0, 210, 255, 0.7);
+      transform: scale(1.05);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 210, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    .obstacle-step::before {
+      content: '';
+      position: absolute;
+      left: -2px;
+      top: 24px;
+      bottom: -24px;
+      width: 2px;
+      background: linear-gradient(to bottom, #00d2ff, transparent);
+    }
+    .obstacle-step:last-child::before {
+      display: none;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+<body class="font-body-md text-body-md custom-scrollbar">
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 w-full z-50 bg-surface/30 backdrop-blur-md border-b border-white/10 shadow-[0_0_20px_rgba(0,210,255,0.1)]">
+    <div class="flex justify-between items-center px-gutter py-sm max-w-container-max mx-auto h-20">
+      <div class="font-headline-md text-headline-md font-bold text-primary-container tracking-tighter cursor-pointer" onclick="location.href='#'">
+        0.6m Viewpoint
+      </div>
+      <div class="hidden md:flex items-center space-x-lg">
+        <a class="text-primary font-bold border-b-2 border-primary pb-1 font-body-lg text-body-lg" href="#">Home</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-lg text-body-lg" href="#features">Features</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-lg text-body-lg" href="#obstacles">Obstacles</a>
+        <a class="text-on-surface-variant hover:text-primary transition-colors font-body-lg text-body-lg" href="#manual">Manual</a>
+      </div>
+      <button onclick="location.href='./simulator.html'" class="btn-neon px-md py-xs rounded-lg text-on-primary font-bold transition-all duration-300">
+        Start Experience
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="relative h-screen flex items-center overflow-hidden">
+    <div class="absolute inset-0 w-full h-full opacity-60" style="display:block;">
+      <canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
+      <script>
+        (function() {
+          const canvas = document.getElementById('shader-canvas-ANIMATION_2');
+          function syncSize() {
+            const w = canvas.clientWidth  || 1280;
+            const h = canvas.clientHeight || 720;
+            if (canvas.width !== w || canvas.height !== h) {
+              canvas.width  = w;
+              canvas.height = h;
+            }
+          }
+          if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(syncSize).observe(canvas);
+          }
+          syncSize();
+
+          const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+          if (!gl) return;
+          const vs = `attribute vec2 a_position;
+          varying vec2 v_texCoord;
+          void main() {
+            v_texCoord = a_position * 0.5 + 0.5;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+          }`;
+          const fs = `precision highp float;
+          uniform float u_time;
+          uniform vec2 u_resolution;
+          uniform vec2 u_mouse;
+
+          void main() {
+              vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+              vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution.xy) / min(u_resolution.y, u_resolution.x);
+              
+              float grid = 0.0;
+              grid += smoothstep(0.98, 1.0, sin(uv.x * 20.0 + u_time * 0.1));
+              grid += smoothstep(0.98, 1.0, sin(uv.y * 20.0 + u_time * 0.1));
+              
+              float d = length(p);
+              float glow = 0.05 / (d + 0.5);
+              
+              vec3 color1 = vec3(0.043, 0.063, 0.125); 
+              vec3 color2 = vec3(0.0, 0.824, 1.0);     
+              
+              float mouseDist = length(uv - (u_mouse / u_resolution));
+              float pulse = 0.5 + 0.5 * sin(u_time * 0.5);
+              
+              vec3 finalColor = mix(color1, color2, glow * pulse + (1.0 - smoothstep(0.0, 0.5, mouseDist)) * 0.1);
+              finalColor += grid * color2 * 0.2;
+              
+              gl_FragColor = vec4(finalColor, 1.0);
+          }`;
+          function cs(type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            return s;
+          }
+          const prog = gl.createProgram();
+          gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+          gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+          gl.linkProgram(prog);
+          gl.useProgram(prog);
+          const buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+          const pos = gl.getAttribLocation(prog, 'a_position');
+          gl.enableVertexAttribArray(pos);
+          gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+          const uTime = gl.getUniformLocation(prog, 'u_time');
+          const uRes = gl.getUniformLocation(prog, 'u_resolution');
+          const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+          let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+          window.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width && rect.height) {
+              const nx = (event.clientX - rect.left) / rect.width;
+              const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+              mouse.x = nx * canvas.width;
+              mouse.y = ny * canvas.height;
+            }
+          });
+
+          function render(t) {
+            if (typeof ResizeObserver === 'undefined') syncSize();
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            if (uTime) gl.uniform1f(uTime, t * 0.001);
+            if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+            if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            requestAnimationFrame(render);
+          }
+          render(0);
+        })();
+      </script>
+    </div>
+    <div class="relative z-10 w-full max-w-container-max mx-auto px-gutter grid grid-cols-1 lg:grid-cols-2 gap-md items-center pt-20">
+      <div class="space-y-md">
+        <div class="inline-flex items-center px-sm py-xs bg-primary/10 border border-primary/20 rounded-full text-primary-fixed-dim text-label-mono uppercase tracking-widest">
+          <span class="material-symbols-outlined mr-xs text-sm">visibility</span>
+          Perspective Simulator
+        </div>
+        <h1 class="font-display-xl text-display-xl leading-tight text-white neon-glow">
+          0.6m의 눈높이에서<br/>마주하는 세상
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+          휠체어 이용자의 관점은 우리가 평소 인지하지 못하는 수많은 물리적 장애물과 심리적 압박을 마주합니다. 실제 물리 법칙과 센서 데이터를 결합한 3D 시뮬레이션을 통해 접근성의 장벽을 직접 경험해보세요.
+        </p>
+        <div class="pt-sm flex flex-wrap gap-md">
+          <button onclick="location.href='./simulator.html'" class="btn-neon px-lg py-sm rounded-xl text-on-primary font-bold text-body-lg flex items-center gap-xs">
+            시뮬레이터 직접 체험하기
+            <span class="material-symbols-outlined">rocket_launch</span>
+          </button>
+          <button onclick="location.href='./11차시_체험_효과_기록표_및_완성도_점검표.md'" class="px-lg py-sm rounded-xl border border-primary/30 text-primary font-bold text-body-lg glass-panel hover:bg-primary/10">
+            평가 및 기획서 보기
+          </button>
+        </div>
+      </div>
+      <div class="relative h-[600px] hidden lg:block">
+        <div class="absolute inset-0 w-full h-full" style="display:block;">
+          <script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+          <div id="threejs-container-ANIMATION_3" style="width:100%;height:100%"></div>
+          <script>
+            (function() {
+              const container = document.getElementById('threejs-container-ANIMATION_3');
+              const width = container.clientWidth || window.innerWidth;
+              const height = container.clientHeight || window.innerHeight;
+
+              const scene = new THREE.Scene();
+              const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+              const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+              renderer.setSize(width, height);
+              container.appendChild(renderer.domElement);
+
+              const group = new THREE.Group();
+
+              const gridHelper = new THREE.GridHelper(20, 20, 0x00d2ff, 0x0e1323);
+              gridHelper.position.y = -1;
+              scene.add(gridHelper);
+
+              const wheelGeo = new THREE.TorusGeometry(0.5, 0.05, 16, 100);
+              const wheelMat = new THREE.MeshPhongMaterial({ color: 0x00d2ff, emissive: 0x004466 });
+
+              const wheelL = new THREE.Mesh(wheelGeo, wheelMat);
+              wheelL.position.set(-0.6, -0.5, 0);
+              wheelL.rotation.y = Math.PI / 2;
+              group.add(wheelL);
+
+              const wheelR = new THREE.Mesh(wheelGeo, wheelMat);
+              wheelR.position.set(0.6, -0.5, 0);
+              wheelR.rotation.y = Math.PI / 2;
+              group.add(wheelR);
+
+              const frameGeo = new THREE.BoxGeometry(1, 0.2, 0.8);
+              const frameMat = new THREE.MeshStandardMaterial({ color: 0x34394a, metalness: 0.8, roughness: 0.2 });
+              const frame = new THREE.Mesh(frameGeo, frameMat);
+              frame.position.y = -0.5;
+              group.add(frame);
+
+              scene.add(group);
+
+              const light = new THREE.PointLight(0xffffff, 1, 100);
+              light.position.set(5, 5, 5);
+              scene.add(light);
+              scene.add(new THREE.AmbientLight(0x404040));
+
+              camera.position.z = 3;
+              camera.position.y = 0; 
+
+              function animate() {
+                requestAnimationFrame(animate);
+                group.rotation.y += 0.005;
+                group.position.y = Math.sin(Date.now() * 0.001) * 0.05;
+                renderer.render(scene, camera);
+              }
+
+              window.addEventListener('resize', () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+              });
+
+              animate();
+            })();
+          </script>
+        </div>
+        <div class="absolute bottom-10 right-10 p-sm glass-panel rounded-xl text-label-mono text-primary flex items-center gap-sm">
+          <div class="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+          REAL-TIME PHYSICS ACTIVE
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-gutter left-1/2 -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
+      <p class="text-label-mono mb-xs text-xs">SCROLL TO EXPLORE</p>
+      <span class="material-symbols-outlined">expand_more</span>
+    </div>
+  </header>
+
+  <!-- Core Features Section -->
+  <section id="features" class="py-xl bg-surface relative z-10">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="text-center mb-lg reveal">
+        <h2 class="font-headline-lg text-headline-lg text-white mb-sm">정교한 기술로 구현된 경험</h2>
+        <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+        <!-- Feature 1 -->
+        <div class="glass-panel p-lg rounded-2xl reveal">
+          <div class="w-16 h-16 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary mb-md">
+            <span class="material-symbols-outlined text-4xl">precision_manufacturing</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md text-white mb-sm">Wheelchair Physics</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant">
+            단순한 이동이 아닙니다. 바퀴의 회전 반경, 경사도에 따른 중력 가속도, 그리고 노면 재질에 따른 마찰계수를 정밀하게 계산하여 실제 휠체어 주행감을 재현합니다.
+          </p>
+        </div>
+        <!-- Feature 2 -->
+        <div class="glass-panel p-lg rounded-2xl reveal" style="transition-delay: 150ms;">
+          <div class="w-16 h-16 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary mb-md">
+            <span class="material-symbols-outlined text-4xl">monitoring</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md text-white mb-sm">Real-time Stamina</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant">
+            수동 휠체어 가동 시 소모되는 상체 근지구력과 피로도를 실시간으로 추적합니다. 경사가 가파를수록, 문이 무거울수록 캐릭터의 스테미나가 급격히 소모됩니다.
+          </p>
+        </div>
+        <!-- Feature 3 -->
+        <div class="glass-panel p-lg rounded-2xl reveal" style="transition-delay: 300ms;">
+          <div class="w-16 h-16 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary mb-md">
+            <span class="material-symbols-outlined text-4xl">psychology</span>
+          </div>
+          <h3 class="font-headline-md text-headline-md text-white mb-sm">Perception Effects</h3>
+          <p class="font-body-md text-body-md text-on-surface-variant">
+            혼잡한 공간에서의 시야 왜곡과 심리적 압박을 시각적 이펙트로 표현합니다. 보행자와의 거리가 가까워질수록 화면 외곽이 흐려지는 블러 효과가 적용됩니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The 5 Obstacles Section -->
+  <section id="obstacles" class="py-xl bg-surface-container-low relative overflow-hidden">
+    <div class="max-w-container-max mx-auto px-gutter relative z-10">
+      <div class="flex flex-col md:flex-row gap-lg">
+        <div class="md:w-1/3 reveal">
+          <h2 class="font-headline-lg text-headline-lg text-white mb-sm">5가지 결정적<br/><span class="text-primary">접근성 장벽</span></h2>
+          <p class="text-on-surface-variant font-body-lg mt-md">도서관이라는 일상적 공간이 이동약자에게는 어떻게 거대한 미로와 장애물 코스로 변하는지 확인하세요.</p>
+        </div>
+        <div class="md:w-2/3 space-y-xl">
+          <!-- Step 1 -->
+          <div class="obstacle-step relative pl-md reveal">
+            <div class="absolute -left-6 top-2 w-12 h-12 bg-surface-container-high border border-primary/50 rounded-full flex items-center justify-center text-primary font-bold z-10 glass-panel">01</div>
+            <div class="glass-panel p-lg rounded-2xl">
+              <h4 class="font-headline-md text-headline-md text-white mb-xs">고중량 수동 통유리문</h4>
+              <p class="text-on-surface-variant mb-md">휠체어에 앉은 상태에서 한 손으로 무거운 유리문을 당기며 동시에 바퀴를 굴려 진입해야 하는 신체적 한계 상황을 경험합니다.</p>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="obstacle-step relative pl-md reveal">
+            <div class="absolute -left-6 top-2 w-12 h-12 bg-surface-container-high border border-primary/50 rounded-full flex items-center justify-center text-primary font-bold z-10 glass-panel">02</div>
+            <div class="glass-panel p-lg rounded-2xl">
+              <h4 class="font-headline-md text-headline-md text-white mb-xs">좁은 서가 구간</h4>
+              <p class="text-on-surface-variant mb-md">표준 휠체어 폭(70cm)과 거의 차이가 없는 80cm 너비의 서가 사이에서 방향을 전환하며 마주하는 좁은 공간의 공포를 시뮬레이션합니다.</p>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="obstacle-step relative pl-md reveal">
+            <div class="absolute -left-6 top-2 w-12 h-12 bg-surface-container-high border border-primary/50 rounded-full flex items-center justify-center text-primary font-bold z-10 glass-panel">03</div>
+            <div class="glass-panel p-lg rounded-2xl">
+              <h4 class="font-headline-md text-headline-md text-white mb-xs">혼잡한 시민 동선</h4>
+              <p class="text-on-surface-variant mb-md">예측할 수 없이 움직이는 NPC 보행자들 사이에서 충돌을 피하며 이동해야 하는 심리적 불안과 회피 알고리즘을 체험합니다.</p>
+            </div>
+          </div>
+          <!-- Step 4 -->
+          <div class="obstacle-step relative pl-md reveal">
+            <div class="absolute -left-6 top-2 w-12 h-12 bg-surface-container-high border border-primary/50 rounded-full flex items-center justify-center text-primary font-bold z-10 glass-panel">04</div>
+            <div class="glass-panel p-lg rounded-2xl">
+              <h4 class="font-headline-md text-headline-md text-white mb-xs">높은 도서 검색대</h4>
+              <p class="text-on-surface-variant mb-md">서서 사용하는 기준(1.2m)으로 제작된 터치스크린과 키보드가 0.6m 눈높이에서 얼마나 도달 불가능한 목표물인지 시각화합니다.</p>
+            </div>
+          </div>
+          <!-- Step 5 -->
+          <div class="obstacle-step relative pl-md reveal">
+            <div class="absolute -left-6 top-2 w-12 h-12 bg-surface-container-high border border-primary/50 rounded-full flex items-center justify-center text-primary font-bold z-10 glass-panel">05</div>
+            <div class="glass-panel p-lg rounded-2xl">
+              <h4 class="font-headline-md text-headline-md text-white mb-xs">핸드레일 없는 계단/급경사</h4>
+              <p class="text-on-surface-variant mb-md">물리적 단절을 의미하는 계단과 안전 장치 없는 경사로가 주는 치명적인 위험성을 센서 데이터 경고음과 함께 경험합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to Play Section -->
+  <section id="manual" class="py-xl bg-surface">
+    <div class="max-w-container-max mx-auto px-gutter">
+      <div class="glass-panel p-lg rounded-3xl border-primary/20 bg-primary/5 reveal">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-lg items-center">
+          <div>
+            <h2 class="font-headline-lg text-headline-lg text-white mb-md">시뮬레이터 조작 가이드</h2>
+            <div class="space-y-md">
+              <div class="flex items-start gap-md">
+                <div class="p-sm bg-surface rounded-lg border border-primary/30 flex items-center justify-center w-16 h-16 shrink-0">
+                  <span class="font-label-mono text-primary font-bold">WASD</span>
+                </div>
+                <div>
+                  <p class="font-headline-md text-white text-sm font-bold">이동 및 회전</p>
+                  <p class="text-on-surface-variant">휠체어 바퀴를 직접 굴려 전진, 후진 및 제자리 회전을 수행합니다.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-md">
+                <div class="p-sm bg-surface rounded-lg border border-primary/30 flex items-center justify-center w-16 h-16 shrink-0">
+                  <span class="font-label-mono text-primary font-bold">SPACE</span>
+                </div>
+                <div>
+                  <p class="font-headline-md text-white text-sm font-bold">상호작용 / 문 밀기</p>
+                  <p class="text-on-surface-variant">문턱이나 무거운 수동문 앞에서 힘겹게 문을 밀어내기 위해 연타합니다.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-md">
+                <div class="p-sm bg-surface rounded-lg border border-primary/30 flex items-center justify-center w-16 h-16 shrink-0">
+                  <span class="material-symbols-outlined text-primary text-3xl">mouse</span>
+                </div>
+                <div>
+                  <p class="font-headline-md text-white text-sm font-bold">시선 전환 (Mouse Drag)</p>
+                  <p class="text-on-surface-variant">고개를 돌려 주변의 장애물과 좁은 공간의 간극을 확인합니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="relative flex justify-center">
+            <div class="w-full aspect-square max-w-sm rounded-full border-4 border-dashed border-primary/20 flex items-center justify-center p-md">
+              <div class="w-full h-full glass-panel rounded-full flex flex-col items-center justify-center text-center p-md">
+                <span class="material-symbols-outlined text-primary text-6xl mb-md animate-pulse">videogame_asset</span>
+                <p class="font-headline-md text-white">준비되셨나요?</p>
+                <p class="text-on-surface-variant mb-md text-sm">3D 물리 기반 환경 셋업 완료</p>
+                <button onclick="location.href='./simulator.html'" class="btn-neon px-md py-xs rounded-full text-on-primary font-bold">시뮬레이션 시작</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-surface-container-lowest w-full py-lg border-t border-outline-variant flat no shadows mt-xl">
+    <div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-md">
+      <div class="flex flex-col items-center md:items-start">
+        <div class="font-headline-md text-headline-md text-on-surface font-bold mb-xs">0.6m Viewpoint</div>
+        <p class="font-body-md text-body-md text-on-surface-variant text-center md:text-left max-w-sm">
+          © 2026 0.6m Viewpoint Accessibility Project. Empathetic, Technical, and Boundless.
+        </p>
+      </div>
+      <div class="flex flex-wrap justify-center gap-md">
+        <a class="text-on-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md text-body-md" href="./10차시_구현_과정_기록표_및_점검표.md">구현 점검표</a>
+        <a class="text-on-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md text-body-md" href="./11차시_체험_효과_기록표_및_완성도_점검표.md">체험 효과 분석</a>
+        <a class="text-on-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md text-body-md" href="./12차시_동료_평가_및_성찰_보고서.md">동료 평가 보고서</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const observerOptions = {
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach((el) => {
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
